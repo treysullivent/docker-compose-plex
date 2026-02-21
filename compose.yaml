@@ -49,10 +49,10 @@ services:
     #  - /dev/dri:/dev/dri
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - ~/docker-data/plex:/config
-      #- /mnt/docker-data/plex:/config
-      - /mnt/MediaLibrary1:/library1:ro
-      - /mnt/MediaLibrary2:/library2:ro
+      - /data/appdata/plex:/config
+      - /data/nas/disk1/MediaLibrary1:/library1:ro
+      - /data/nas/disk2/MediaLibrary2:/library2:ro
+      - /data/nas/zfs1/Media:/library3:ro
     image: lscr.io/linuxserver/plex:latest
     healthcheck:
       test: curl --connect-timeout 15 --silent --show-error --fail http://localhost:32400/identity
@@ -66,7 +66,7 @@ services:
     image: tautulli/tautulli
     container_name: tautulli
     volumes:
-      - ~/docker-data/tautulli:/config
+      - /data/appdata/tautulli:/config
     environment:
       <<: *media-grp
     ports:
@@ -79,7 +79,10 @@ services:
       <<: *media-grp
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - ~/docker-data/kometa:/config:rw
+      - /data/appdata/kometa/config:/config:rw
+      - /data/appdata/kometa/assets:/assets:rw
+      - /data/appdata/kometa/overlays:/config/overlays:rw
+
     image: kometateam/kometa
     env_file:
       - path: default.env
@@ -95,8 +98,8 @@ services:
       <<: *media-grp
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - ~/docker-data/imagemaid/config:/config:rw
-      - "~/docker-data/plex/Library/Application Support/Plex Media Server:/plex:rw"
+      - /data/appdata/imagemaid/config:/config:rw
+      - "/data/appdata/plex/Library/Application Support/Plex Media Server:/plex:rw"
 
   letterboxd-plex-sync:
     <<: [*general, *plexdependant]
@@ -112,4 +115,22 @@ services:
 
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - /mnt/docker-data/letterboxd-plex-sync/data:/app/data:rw # add in a data folder to store your lb to tmdb mapping CSV file.
+      - /data/appdata/letterboxd-plex-sync/data:/app/data:rw
+
+
+  letterboxd-plex-sync2:
+    <<: [*general, *plexdependant]
+    container_name: letterboxd-plex-sync2
+    image: treysu/letterboxd-plex-sync:latest
+    environment:
+      <<: *media-grp
+    env_file:
+      - path: letterboxd2.env
+        required: true
+      - path: default.env
+        required: true
+
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /data/appdata/letterboxd-plex-sync/data:/app/data:rw
+
